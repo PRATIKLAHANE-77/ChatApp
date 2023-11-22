@@ -1,6 +1,9 @@
 const Sequelize = require("sequelize");
+const env = require("../.env");
+const pass = env.password;
 
-const sequelize = new Sequelize("chatapp", "root", "Pratik@123", {
+
+const sequelize = new Sequelize("chatapp", "root", `${pass}`, {
   dialect: "mysql",
   host: "localhost",
 });

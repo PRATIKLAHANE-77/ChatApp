@@ -3,7 +3,6 @@ const bcrypt = require("bcrypt");
 
 exports.signup = async (req, res) => {
   const { name, email, password, number } = req.body;
-  console.log("req.body", req.body);
 
   try {
     const existingUser = await user.findOne({
@@ -32,5 +31,33 @@ exports.signup = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json("Error creating the user.");
+  }
+};
+
+
+exports.login = async (req, res) => {
+  const { email, password } = req.body;
+  console.log("in server side when login data received",email, password);
+
+  try {
+    const existingUser = await user.findOne({
+      where: {
+        email: email,
+      },
+    });
+
+    if (!existingUser) {
+      return res.status(404).json("User does not exist");
+    }
+
+    // Compare the entered password with the stored hashed password
+    bcrypt.compare(password, existingUser.password, (err, result) => {
+      if (err || !result) {
+        return res.status(401).json("Invalid password");
+      }
+      res.status(200).json(existingUser);
+    });
+  } catch (error) {
+    res.status(500).json("Error signing in");
   }
 };
