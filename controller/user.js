@@ -1,5 +1,11 @@
 const user = require("../model/user");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
+function generateAccessToken(id) {
+  // return (accessToken = jwt.sign({ id }, "secretkey"));
+  return jwt.sign({ userId: id }, "secretkey");
+}
 
 exports.signup = async (req, res) => {
   const { name, email, password, number } = req.body;
@@ -25,7 +31,7 @@ exports.signup = async (req, res) => {
         name,
         email,
         password: hashedPassword,
-        number
+        number,
       });
       res.status(201).json(newUser);
     });
@@ -34,10 +40,9 @@ exports.signup = async (req, res) => {
   }
 };
 
-
 exports.login = async (req, res) => {
   const { email, password } = req.body;
-  console.log("in server side when login data received",email, password);
+  console.log("in server side when login data received", email, password);
 
   try {
     const existingUser = await user.findOne({
@@ -55,7 +60,9 @@ exports.login = async (req, res) => {
       if (err || !result) {
         return res.status(401).json("Invalid password");
       }
-      res.status(200).json(existingUser);
+      // res.status(200).json(existingUser);
+
+      res.status(200).json({ token: generateAccessToken(existingUser.id) });
     });
   } catch (error) {
     res.status(500).json("Error signing in");

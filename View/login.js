@@ -22,10 +22,15 @@ async function loginUser(user) {
   try{
     let result = await axios.post("http://localhost:5000/user/login", user);
     if(result.status == 200) {
+      console.log(result);
       alert("Logged in Succssfully");
     }
   }
   catch(err){
     console.log(err);
+    const h1 = document.createElement("h1");
+    h1.innerHTML = "Something Went Wrong, Check Email or Password";
+    h1.style.textAlign = "center";
+    document.body.appendChild(h1);
   }
 }
