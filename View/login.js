@@ -22,8 +22,10 @@ async function loginUser(user) {
   try{
     let result = await axios.post("http://localhost:5000/user/login", user);
     if(result.status == 200) {
-      console.log(result);
+      // console.log(result.data.token);
       alert("Logged in Succssfully");
+      localStorage.setItem('token', result.data.token);
+      window.location.href = "chat.html";
     }
   }
   catch(err){

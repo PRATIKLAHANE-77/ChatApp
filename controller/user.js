@@ -3,7 +3,6 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 function generateAccessToken(id) {
-  // return (accessToken = jwt.sign({ id }, "secretkey"));
   return jwt.sign({ userId: id }, "secretkey");
 }
 
@@ -33,7 +32,9 @@ exports.signup = async (req, res) => {
         password: hashedPassword,
         number,
       });
-      res.status(201).json(newUser);
+      // res.status(201).json(newUser); not pass credentials
+      const successMessage = "User created successfully";
+      res.status(201).json({ message: successMessage });
     });
   } catch (error) {
     res.status(500).json("Error creating the user.");
@@ -42,7 +43,6 @@ exports.signup = async (req, res) => {
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
-  console.log("in server side when login data received", email, password);
 
   try {
     const existingUser = await user.findOne({

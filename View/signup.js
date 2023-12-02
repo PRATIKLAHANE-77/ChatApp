@@ -28,6 +28,7 @@ async function signupUser(info) {
 
     if (result.status == 201) {
       alert("User signed up successfully");
+      window.location.href = "login.html";
     }
   } catch (error) {
     if (error.response.status == 400) {
