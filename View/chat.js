@@ -2,8 +2,7 @@ const message = document.getElementById("message");
 const button = document.getElementById("send");
 const token = localStorage.getItem("token");
 
-const div = document.createElement("div");
-setInterval(() => refresh(), 1000);
+// setInterval(() => localStorage(), 1000);
 
 button.addEventListener("click", (event) => {
   event.preventDefault();
@@ -14,7 +13,6 @@ button.addEventListener("click", (event) => {
 });
 
 async function sendMessage(message) {
-  console.log(message);
   let result = await axios.post(
     "http://localhost:5000/chat/send-message",
     message,
@@ -23,59 +21,46 @@ async function sendMessage(message) {
     }
   );
 
-  console.log(result);
+  console.log("message sended", result);
   if (result.status == 201) {
     alert("message send sucessfully");
-    // refresh();
+    messagesended(result);
   }
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  refresh();
+  localdata();
 });
 
-async function refresh() {
-  try {
-    let result = await axios.get("http://localhost:5000/chat/receive-message", {
+const div = document.createElement("div");
+div.innerHTML =`<table><tr><th>messages</th><th>Date</th></tr></table>`
+
+async function localdata() {
+  let result = await axios.get("http://localhost:5000/chat/receive-message", {
     headers: { Authorization: token },
   });
   if (result.status == 200) {
-    div.innerHTML = "";
-    // alert("sucessfully receiving message");
+    let messages = [];
     console.log(result.data);
-    div.innerHTML = `<table><tr><th>messages</th><th>Date</th></table>`;
-
-    function formatDateString(dateString) {
-      const options = {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "numeric",
-        second: "numeric",
-        timeZoneName: "short",
-      };
-      const formattedDate = new Date(dateString).toLocaleString(
-        "en-US",
-        options
-      );
-      return formattedDate;
-    }
-
-    const array = result.data;
+    let array = result.data;
     array.forEach((object, index) => {
-      console.log("object", object);
-      const formattedDate = formatDateString(object.date);
-      div.innerHTML =
-        div.innerHTML +
-        `<table><tr><td>${object.message}</td><td>${formattedDate}</td></tr></table>`;
+      // messages.push(object.message + " " + object.date);  add time later
+      messages.push({message:object.message, date:object.date});
     });
 
+    localStorage.setItem("messages", JSON.stringify(messages));
+    const data = localStorage.getItem("messages");
+    console.log("data", data);
+    const finaldata = JSON.parse(data);
+    console.log("finaldata", finaldata);
+    finaldata.forEach((object, index) => {
+      div.innerHTML += `<table><tr><td>${object.message}</td><td>${object.date}</td></tr></table>`;
+
+    });
     document.body.appendChild(div);
   }
-  }
-  catch (error) {
-    console.error("Error refreshing:", error);
-    // Handle the error, e.g., show an alert or update UI
-  }
+}
+
+async function messagesended(param) {
+  div.innerHTML += `<table><tr><td>${param.data.message}</td><td>${param.data.date}</td></tr></table>`;
 }

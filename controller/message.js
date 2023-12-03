@@ -19,7 +19,7 @@ exports.sendmessage = async (req, res) => {
   const newUser = await user.findOne({ where: { id: userId } });
 
   if (newMessage) {
-    res.status(201).json({ name: newUser.name, message: newMessage.message });
+    res.status(201).json({ name: newUser.name, message: newMessage.message, date:newMessage.date });
   }
 };
 
