@@ -2,6 +2,7 @@ const email = document.getElementById("email");
 const password = document.getElementById("password");
 const login = document.getElementById("login");
 const signup = document.getElementById("signup");
+localStorage.removeItem("messages");
 
 signup.addEventListener("click", (event) => {
   event.preventDefault();
