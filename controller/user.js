@@ -68,3 +68,13 @@ exports.login = async (req, res) => {
     res.status(500).json("Error signing in");
   }
 };
+
+
+exports.getallusers = async (req,res) =>{
+  const allusers = await user.findAll();
+  res.status(200).json(allusers);
+
+
+
+
+}

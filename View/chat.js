@@ -1,130 +1,191 @@
-const message = document.getElementById("message");
-const button = document.getElementById("send");
+const creategrp = document.getElementById("new-grp");
+const groupform = document.getElementById("form");
+const selectedUsers = [];
+const userslist = document.getElementById("user-list");
 const token = localStorage.getItem("token");
+const grplist = document.getElementById("groupslist");
+const sentmessage = document.getElementById("message-send-form");
+const msglist = document.getElementById("msglist");
 
-// setInterval(() => localStorage(), 1000);
+creategrp.addEventListener("click", () => formopen());
 
-button.addEventListener("click", (event) => {
-  event.preventDefault();
-  const obj = {
-    message: message.value,
-  };
-  sendMessage(obj);
-});
+async function getusers() {
+  userslist.textContent = "";
+  const result = await axios.get("http://localhost:5000/user/allusers");
+  createlist(result.data);
+}
 
-async function sendMessage(message) {
-  let result = await axios.post(
-    "http://localhost:5000/chat/send-message",
-    message,
-    {
-      headers: { Authorization: token },
-    }
-  );
-
-  console.log("message sended", result);
-  if (result.status == 201) {
-    alert("message send sucessfully");
-    messagesended(result);
+function createlist(users) {
+  for (let i = 0; i < users.length; i++) {
+    const li = document.createElement("li");
+    li.textContent = "";
+    li.innerHTML = `${users[i].name}`;
+    li.addEventListener("click", () => toggleUserSelection(users[i]));
+    userslist.appendChild(li);
   }
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-  localdata();
+function toggleUserSelection(user) {
+  const index = selectedUsers.findIndex(
+    (selectedUser) => selectedUser.id === user.id
+  );
+
+  if (index === -1) {
+    // User not selected, add to the array
+    selectedUsers.push(user);
+  } else {
+    // User already selected, remove from the array
+    selectedUsers.splice(index, 1);
+  }
+}
+
+function formopen() {
+  console.log("clicked");
+  groupform.innerHTML = `<label for="grp-name">Group Name</label>
+  <input id="grp-name" type="text">
+  <button id="createGroupBtn" onclick="createGroup()">Create Group</button>`;
+  getusers();
+}
+
+function createGroup() {
+  console.log(selectedUsers);
+  const grpname = document.getElementById("grp-name").value;
+  groupform.innerHTML = "";
+  console.log("grp name", grpname);
+  axios
+    .post(
+      "http://localhost:5000/group/createGroup",
+      { users: selectedUsers, grpname: grpname },
+      {
+        headers: { Authorization: token },
+      }
+    )
+    .then((response) => {
+      selectedUsers.length = 0;
+      // Handle the response from the backend
+      console.log("Group created successfully:", response.data);
+      // const param = [];
+      // param.push(response.data);
+      getgroups();
+
+      // displayCreatedGroup(response.data.groupname, response.data.id);
+    })
+    .catch((error) => {
+      console.error("Error creating group:", error);
+    });
+}
+
+window.addEventListener("DOMContentLoaded", async () => {
+  getgroups();
 });
 
-const div = document.createElement("div");
-div.innerHTML = `<table><tr><th>messages</th><th>Date</th></tr></table>`;
+async function getgroups() {
+  grplist.textContent = "";
+  let result = await axios.get(`http://localhost:5000/group/usergroups`, {
+    headers: { Authorization: token },
+  });
+  console.log("member included in this grps = ", result.data);
+  showgrps(result.data);
+}
 
-async function localdata() {
-  div.innerHTML = "";
-  div.innerHTML = `<table><tr><th>messages</th><th>Date</th></tr></table>`;
-  const getmessages = localStorage.getItem("messages");
-  console.log("getmessages", getmessages);
-  let msgid = -1;
-  const msgarray = JSON.parse(getmessages);
-  console.log("msgarray", msgarray);
-  if (msgarray != null && msgarray.length != 0) {
-    console.log("inside if blog");
-    msgid = msgarray[msgarray.length - 1].id;
-    console.log("id", msgid);
+function showgrps(array) {
+  console.log("check at frontend", array);
+  for (let i = 0; i < array.length; i++) {
+    const li = document.createElement("li");
+    // li.textContent = "";
+    li.textContent = array[i].groupname;
+    console.log("group names = ", array[i].groupname);
+    grplist.appendChild(li);
+    li.addEventListener("click", (event) => {
+      event.preventDefault();
+      console.log("group name clicked = ", li.textContent, array[i].id);
+      let groupname = li.textContent;
+      let groupid = array[i].id;
+      let obj = {
+        groupname: groupname,
+        groupid: groupid,
+      };
+      getgrpmessages(obj);
+    });
   }
-  console.log("msgid", msgid);
+}
 
+async function getgrpmessages(groupinfo) {
+  let allgrpmsg = localStorage.getItem(groupinfo.groupname);
+  console.log("initial localstrorage messages", allgrpmsg);
+  let oldarr = [];
+  let lastid = -1;
+  if(allgrpmsg != null) {
+    oldarr = JSON.parse(allgrpmsg);
+    console.log("oldarr", oldarr);
+     lastid = oldarr[oldarr.length-1].id;
+    console.log("lastid",lastid);
+  }
+
+  let groupid = groupinfo.groupid;
   let result = await axios.get(
-    `http://localhost:5000/chat/receive-message/${msgid}`,
+    `http://localhost:5000/chat/receive-message?groupid=${groupid}&lastid=${lastid}`,
     {
       headers: { Authorization: token },
     }
   );
-  if (result.status == 200) {
-    let newmessages = [];
-    console.log("result.data after refreshing =", result.data);
-    let array = result.data;
-    array.forEach((object, index) => {
-      // messages.push(object.message + " " + object.date);  add time later
-      newmessages.push({
-        message: object.message,
-        date: object.date,
-        id: object.id,
-      });
-    });
-    let newarr = [];
-    console.log("newmessage", newmessages);
-    if (msgarray != null) {
-      newarr = [...msgarray, ...newmessages];
-    } else {
-      newarr = [...newmessages];
-    }
 
-    console.log("final array length = ", newarr.length);
-    if (newarr.length > 10) {
-      // console.log("inside removing of extra messages");
-      // for (let i = 0; i <= newarr.length; i++) {
-      //   newarr.pop();
-      //   if(newarr.length == 10) {
-      //     break;
-      //   }
-      // }
-      while(newarr.length>10) {
-        newarr.shift();
+  if (result.status == 200) {
+    console.log("all messages", result.data);
+    let newarr = result.data;
+    console.log("new array received", newarr);
+    // let OLDARR = JSON.stringify(oldarr);
+    let finalarr = [...oldarr,...newarr];
+    // let FinalArr = JSON.parse(finalarr);
+    console.log("finalarr", finalarr);
+    if (finalarr.length > 10) {
+      while (finalarr.length == 10) {
+        finalarr.shift();
       }
     }
-
-    console.log("newarr", newarr);
-
-    localStorage.setItem("messages", JSON.stringify(newarr));
-    const stringdata = localStorage.getItem("messages");
-    const finaldata = JSON.parse(stringdata);
-    finaldata.forEach((object, index) => {
-      div.innerHTML += `<table><tr><td>${object.message}</td><td>${object.date}</td></tr></table>`;
-    });
-    document.body.appendChild(div);
+    localStorage.setItem(groupinfo.groupname, JSON.stringify(finalarr));
+    msglist.innerHTML = "";
+    for (let i = 0; i < finalarr.length; i++) {
+      const li = document.createElement("li");
+      li.textContent = finalarr[i].message + finalarr[i].date;
+      msglist.appendChild(li);
+    }
   }
+
+  sentmessage.innerHTML = ` <h2>Send Message</h2>
+  <label for="text-message">Message</label>
+  <input id="text-message" type="text" />
+  <button id="send-message">Send Message</button>`;
+
+  const Message = document.getElementById("text-message");
+  const send = document.getElementById("send-message");
+
+  send.addEventListener("click", (event) => {
+    event.preventDefault();
+    let obj = {
+      message: Message.value,
+      groupid: groupinfo.groupid,
+    };
+    msgsend(obj);
+  });
 }
 
-async function messagesended(param) {
-  let newmsg = [];
-  newmsg.push(param.data);
-  div.innerHTML = "";
-  div.innerHTML = `<table><tr><th>messages</th><th>Date</th></tr></table>`;
-  // localdata();
-  const stringdata = localStorage.getItem("messages");
-  const finaldata = JSON.parse(stringdata);
-  let arr = [];
-  arr = [...finaldata, ...newmsg];
-  console.log("before delete arr", arr);
-if(arr.length > 10) {
-while(arr.length>10) {
-  arr.shift();
-}
-} 
-console.log("after delete array" , arr);
-  arr.forEach((object, index) => {
-    div.innerHTML += `<table><tr><td>${object.message}</td><td>${object.date}</td></tr></table>`;
-  });
-  // finaldata.forEach((object, index) => {
-  //   div.innerHTML += `<table><tr><td>${object.message}</td><td>${object.date}</td></tr></table>`;
-  // });
-  // div.innerHTML += `<table><tr><td>${param.data.message}</td><td>${param.data.date}</td></tr></table>`;
-  document.body.appendChild(div);
+async function msgsend(info) {
+  console.log("info before sending", info);
+  let result = await axios.post(
+    "http://localhost:5000/chat/send-message",
+    info,
+    {
+      headers: { Authorization: token },
+    }
+  );
+  if (result.status == 201) {
+    alert(result.data);
+    console.log("info", result.data);
+    let obj = {
+      groupname:result.data.groupname,
+      groupid:result.data.groupid
+    }
+    getgrpmessages(obj);
+  }
 }

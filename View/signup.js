@@ -4,6 +4,7 @@ const number = document.getElementById("number");
 const password = document.getElementById("password");
 const Signup = document.getElementById("signup");
 const login = document.getElementById("login");
+localStorage.removeItem("messages");
 
 login.addEventListener("click", (event) => {
   event.preventDefault();

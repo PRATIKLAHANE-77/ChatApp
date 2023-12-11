@@ -2,6 +2,7 @@ const Sequelize = require("sequelize");
 const sequelize = require("../util/database");
 
 
+
 const user = sequelize.define(
   "user",
   {
@@ -37,6 +38,7 @@ const user = sequelize.define(
     tableName: "user", // Specify the table name as 'model'
   }
 );
+
 
 
 

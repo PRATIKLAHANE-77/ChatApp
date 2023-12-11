@@ -3,102 +3,289 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chat</title>
+    <title>Document</title>
   </head>
   <body>
-    <form>
-      <label for="Message">Sent Message</label>
-      <input id="message" type="text" />
-      <button id="send">send</button>
-    </form>
+    <button id="new-grp">New Group</button>
+    <div id="group-creation-form">
+      <ul id="user-list"></ul>
+      <form id="form"></form>
+    </div>
+    <div id="createdGroups">
+      <h2>Groups</h2>
+      <ul id="groupslist"></ul>
+    </div>
+    <div id="right-side">
+      <form id="message-send-form">
+      </form>
+      <div id="grp-messages">
+        <ul id="msglist"></ul>
+      </div>
+    </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.0/axios.min.js"></script>
     <script src="chat.js"></script>
   </body>
 </html>
 
-<style>
-  body {
-    font-family: sans-serif;
+<!-- <style>
+  /* Reset some default styles */
+  body,
+  h1,
+  h2,
+  p,
+  ul,
+  button,
+  input {
     margin: 0;
     padding: 0;
-    background-color: #f2f2f2;
+  }
+
+  body {
+    font-family: "Arial", sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    flex-direction: column;
+    align-items: left; /* Align everything to the left */
+    justify-content: center;
+    height: 100vh;
+  }
+
+  header,
+  footer {
+    background-color: #007bff;
+    color: #fff;
     text-align: center;
-  }
-
-  form {
-    width: 400px;
-    margin: 50px auto;
-    padding: 30px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  }
-
-  label {
-    display: block;
-    margin-bottom: 10px;
-    margin-top: 10px;
-  }
-
-  input {
-    width: 100%;
     padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+  }
+
+  main {
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px;
   }
 
   button {
-    margin-top: 10px;
     background-color: #007bff;
     color: #fff;
     padding: 10px 20px;
     border: none;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 140px;
+    position: relative;
+    left: 24px;
+    top: 10px;
   }
 
   button:hover {
-    background-color: #0069d9;
+    background-color: #0056b3;
   }
 
-  .received-message {
-  background-color: #e6f7ff;
-  border-radius: 10px;
-  padding: 10px;
-  margin-top: 20px;
-  text-align: left;
-  max-width: 70%;
-}
-/* Add this CSS code for styling the table */
+  #group-creation-form,
+  #createdGroups {
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 20px;
+    width: 300px;
+    margin: 20px;
+  }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
+  #user-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    max-height: 200px;
+  }
+
+  li {
+    cursor: pointer;
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+    transition: background-color 0.3s ease;
+  }
+
+  li:hover {
+    background-color: #f0f0f0;
+  }
+
+  #form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+  }
+
+  #form input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 16px;
+    box-sizing: border-box;
+  }
+
+  #createGroupBtn {
+    background-color: #4caf50;
+    color: #fff;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  #createdGroups {
+    margin-left: 20px;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow-y: auto;
+  }
+
+  h2 {
+    color: #333;
+    margin-bottom: 10px;
+  }
+
+  #groupslist {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  #groupslist li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    transition: background-color 0.3s ease;
+  }
+
+  #groupslist li:hover {
+    background-color: #f0f0f0;
+  }
+</style> -->
+
+
+
+<style>
+  body {
+  font-family: "Arial", sans-serif;
+  background-color: #f4f4f4;
+  display: flex;
+  height: 100vh;
+  margin: 0;
 }
 
-th, td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
-  width: 315px; /* Set a fixed width for the cells */
-  overflow: hidden;
-  text-overflow: ellipsis; /* Show ellipsis (...) for overflowed text */
-  white-space: nowrap; /* Prevent text from wrapping */
+/* Left side - User and Group list */
+#left-side {
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  width: 300px;
+  padding: 20px;
 }
 
-th {
+button {
   background-color: #007bff;
   color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-bottom: 10px;
 }
 
-tr:nth-child(even) {
-  background-color: #f2f2f2;
+button:hover {
+  background-color: #0056b3;
 }
 
-tr:hover {
-  background-color: #ddd;
+#group-creation-form,
+#createdGroups {
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  
 }
 
+#user-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  max-height: 200px;
+}
+
+li {
+  cursor: pointer;
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+  transition: background-color 0.3s ease;
+}
+
+li:hover {
+  background-color: #f0f0f0;
+}
+
+/* Right side - Group messages and message send form */
+#right-side {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+#grp-messages {
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  overflow-y: auto;
+}
+
+#msglist {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+#msglist li {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+#message-send-form {
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+#text-message {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+#send-message {
+  background-color: #007bff;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#send-message:hover {
+  background-color: #0056b3;
+}
 
 </style>
