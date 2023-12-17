@@ -17,6 +17,11 @@ const group = sequelize.define(
       type: Sequelize.STRING, // Corrected
       allowNull: false,
       // unique:true,
+    },
+    createdBy:{
+      type:Sequelize.STRING,
+      allowNull:false,
+      
     }
   },
   {

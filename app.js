@@ -9,6 +9,7 @@ const chat = require('./model/chat');
 const group = require('./model/group');
 const usergroup = require('./model/usergroup');
 const groupRoute = require('./routes/group');
+const adminRoute = require("./routes/admin");
 
 app.use(express.json({ extended: true }));
 app.use(express.urlencoded({ extended: true }));
@@ -18,6 +19,7 @@ app.use(cors());
 app.use('/user', userRoute);
 app.use('/chat', messageRoute);
 app.use('/group', groupRoute);
+app.use('/admin', adminRoute);
 
 user.hasMany(chat, { as: 'chats' });
 chat.belongsTo(user);

@@ -1,6 +1,8 @@
 const user = require("../model/user");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const usergroup = require("../model/usergroup");
+const { Op } = require("sequelize");
 
 function generateAccessToken(id) {
   return jwt.sign({ userId: id }, "secretkey");
@@ -69,12 +71,48 @@ exports.login = async (req, res) => {
   }
 };
 
-
-exports.getallusers = async (req,res) =>{
+exports.getallusers = async (req, res) => {
   const allusers = await user.findAll();
   res.status(200).json(allusers);
+};
 
 
 
+exports.remainingUsers = async (req, res) => {
+  console.log("remaining users are =", req.query);
+  let result = await usergroup.findAll({
+    where: { groupId: req.query.groupinfo.groupid },
+  });
+  console.log("all users inside group are = ", result);
+
+  const userIdsInsideGroup = result.map((usergroup) => usergroup.dataValues.userId);
+
+  const remainingUsers = await user.findAll({
+    where: {
+      id: {
+        [Op.notIn]: userIdsInsideGroup,
+      },
+    },
+  });
+
+  res.status(200).json(remainingUsers);
+};
+
+
+exports.addNewUsers = async (req,res) =>{
+try{
+  console.log("in backend storing remaining users = ", req.body);
+  const groupId = req.body.groupinfo.groupid;
+  const users = req.body.users;
+  let addednewusers = [];
+  for(let i = 0;i<users.length;i++) {
+    let result = await usergroup.create({groupId:groupId, userId:users[i].id});
+    addednewusers.push(result);
+  }
+  res.status(200).json(addednewusers);
+} catch{
+  res.status(404).json("error while adding");
 
 }
+  }
+

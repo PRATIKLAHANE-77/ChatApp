@@ -10,6 +10,11 @@ const usergroup = sequelize.define(
       allowNull: false,
       primaryKey: true,
     },
+    admin:{
+      type:Sequelize.BOOLEAN,
+      allowNull:true,
+
+    }
   },
   {
     tableName: "usergroup",
